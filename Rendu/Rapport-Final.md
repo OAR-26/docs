@@ -389,6 +389,8 @@ _Répartition par langage — obtenue avec `tokei`_ -->
 | Moataz Er-rami    |   17 (34.69%) |       574 |       340 |
 | Dila Memil        |   13 (26.53%) |       488 |       197 |
 
+Au début du projet et jusqu'au milieu, Aymane AMESSEGHER avait push le fichier data.json, qui contient les résultats de la commande oastat et toutes les informations liées au chargement des données. Comme ce fichier se modifie à chaque exécution - le système étant en temps réel - chaque push générait l’impression d’avoir écrit environ 5xx xxx lignes de code. Cela a faussé le décompte réel de ces lignes de code. Après vérification, nous avons constaté qu’en réalité, il avait ajouté environ 2 xxx lignes de code.
+
 #### API
 
 | Auteur combiné | Commits (%)  | + Lignes | - Lignes |
