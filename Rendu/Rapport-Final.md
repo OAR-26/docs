@@ -47,13 +47,15 @@ Ce rapport présente les résultats du projet OAR Redux, réalisé dans le cadre
 
 La compétence retenue pour ce projet est **Réaliser des solutions numériques**, car le travail a consisté à concevoir et implémenter une solution logicielle complète (IHM + API) dans un contexte HPC, en garantissant qualité, sécurité et maintenabilité.
 
-- **Méthodes et outils adaptés** : choix technologiques cohérents avec les contraintes (Rust pour performance/sûreté mémoire ; `egui/eframe` pour une IHM réactive en natif et web ; `axum`/`tokio` pour un backend asynchrone). Côté IHM, le refactoring du Gantt (découpage par responsabilités) a été mené pour réduire la complexité et faciliter l’évolution.
-- **Réglementation et bonnes pratiques** : les données manipulées sont principalement techniques (jobs, ressources, périodes, nœuds). L’API met en œuvre des mécanismes de sécurité conformes aux pratiques recommandées (JWT, clés API inter‑services, hachage Argon2, contrôle d’accès par rôle) et une attention est portée à la maîtrise des informations exposées (pas de secrets versionnés).
-- **Optimisation ressources matérielles et énergétiques** : l’architecture limite la surcharge côté serveur (asynchronisme `tokio`, typage fort, trajectoire vers une collecte via API plutôt que des appels répétés à `oarstat`). Côté IHM, l’état centralisé (`ApplicationContext`) et le filtrage en amont évitent des recalculs au rendu ; le graphe d’énergie estimée fournit un indicateur d’interprétation sur la fenêtre temporelle affichée.
-- **Collaboration** : organisation en deux axes (IHM / API) avec synchronisations régulières, permettant d’avancer en parallèle tout en restant alignés sur les besoins (données attendues, endpoints, contraintes d’affichage). L’outillage (GitHub, Discord, Trello) a structuré le suivi et la priorisation.
-- **Spécifications et normes techniques** : conformité au cahier des charges (Gantt inspiré Grid5000, pan/zoom, sauts 1 jour / 1 semaine, survol/infobulles, détails job, presets/filtres, visualisation énergie). Côté API, l’architecture hexagonale (_ports & adapters_) et la documentation OpenAPI générée à partir des types assurent un contrat clair et durable.
+- **Méthodes et outils adaptés** : choix technologiques cohérents avec les contraintes (Rust pour performance/sûreté mémoire ; `egui/eframe` [#egui](#bib-egui)[#eframe](#bib-eframe) pour une IHM réactive en natif et web ; `axum`/`tokio` pour un backend asynchrone). Côté IHM, le refactoring du Gantt (découpage par responsabilités) a été mené pour réduire la complexité et faciliter l'évolution.
+- **Réglementation et bonnes pratiques** : les données manipulées sont principalement techniques (jobs, ressources, périodes, nœuds). L'API met en œuvre des mécanismes de sécurité conformes aux pratiques recommandées (JWT, clés API inter‑services, hachage Argon2, contrôle d'accès par rôle) et une attention est portée à la maîtrise des informations exposées (pas de secrets versionnés).
+- **Optimisation ressources matérielles et énergétiques** : l'architecture limite la surcharge côté serveur (asynchronisme `tokio`, typage fort, trajectoire vers une collecte via API plutôt que des appels répétés à `oarstat`). Côté IHM, l'état centralisé (`ApplicationContext`) et le filtrage en amont évitent des recalculs au rendu ; le graphe d'énergie estimée fournit un indicateur d'interprétation sur la fenêtre temporelle affichée.
+- **Collaboration** : organisation en deux axes (IHM / API) avec synchronisations régulières, permettant d'avancer en parallèle tout en restant alignés sur les besoins (données attendues, endpoints, contraintes d'affichage). L'outillage (GitHub, Discord, Trello) a structuré le suivi et la priorisation.
+- **Spécifications et normes techniques** : conformité au cahier des charges (Gantt inspiré Grid5000 [#grid5000](#bib-grid5000), pan/zoom, sauts 1 jour / 1 semaine, survol/infobulles, détails job, presets/filtres, visualisation énergie). Côté API, l'architecture hexagonale (_ports & adapters_) [#cockburn](#bib-cockburn) et la documentation OpenAPI générée à partir des types assurent un contrat clair et durable.
 - **Choix de conception justifiés** : refactoring du Gantt pour limiter les risques de régression ; `ApplicationContext` pour garantir un état partagé cohérent entre vues ; séparation domaine/infrastructure pour éviter le couplage à un framework ; `sqlx` pour fiabiliser les requêtes via validation à la compilation.
-- **Adaptation au contexte** : reprise d’un existant, montée en compétence Rust et évolution du périmètre (API devenue structurante) ont imposé une démarche itérative (analyse, prototypage, retours client/tuteur, consolidation), avec une réorganisation/priorisation lorsque les contraintes d’équipe l’imposaient.
+- **Adaptation au contexte** : reprise d'un existant, montée en compétence Rust et évolution du périmètre (API devenue structurante) ont imposé une démarche itérative (analyse, prototypage, retours client/tuteur, consolidation), avec une réorganisation/priorisation lorsque les contraintes d'équipe l'imposaient.
+
+<!-- > **Remarque** : La page de référence du projet sur la plateforme AIR/Grenoble [#air](#bib-air) documente le contexte institutionnel de l'utilisation d'`egui`/Rust pour les outils HPC de Grid5000, dont ce projet s'inscrit directement dans la continuité. -->
 
 ---
 
@@ -61,15 +63,15 @@ La compétence retenue pour ce projet est **Réaliser des solutions numériques*
 
 ### Contexte
 
-OAR est un gestionnaire de jobs et de ressources développé par l'équipe DATAMOVE, un groupe de recherche commun entre l'INRIA et le LIG (Laboratoire d'Informatique de Grenoble). Il est largement utilisé dans les clusters HPC académiques et de recherche pour ordonnancer et allouer efficacement les ressources de calcul, et constitue le socle de plateformes comme Grid5000. Malgré sa maturité et la richesse de ses fonctionnalités, OAR a longtemps manqué d'outils interactifs permettant de surveiller l'état du cluster en temps réel, laissant les administrateurs avec une visibilité limitée sur ce qui s'exécute réellement et où.
+OAR est un gestionnaire de jobs et de ressources développé par l'équipe DATAMOVE, un groupe de recherche commun entre l'INRIA et le LIG (Laboratoire d'Informatique de Grenoble). Il est largement utilisé dans les clusters HPC académiques et de recherche pour ordonnancer et allouer efficacement les ressources de calcul, et constitue le socle de plateformes comme Grid5000 [#oar](#bib-oar)[#grid5000](#bib-grid5000). Malgré sa maturité et la richesse de ses fonctionnalités, OAR a longtemps manqué d'outils interactifs permettant de surveiller l'état du cluster en temps réel, laissant les administrateurs avec une visibilité limitée sur ce qui s'exécute réellement et où.
 
-Goard répond à ce manque en proposant une couche de visualisation web par-dessus OAR. Il offre deux vues complémentaires : un tableau de bord des ressources affichant l'état courant du cluster, et un diagramme de Gantt représentant les jobs OAR sur une ligne de temps, permettant de comprendre en un coup d'œil l'utilisation des ressources et l'ordonnancement des jobs.
+Goard répond à ce manque en proposant une couche de visualisation web par-dessus OAR [#goard](#bib-goard). Il offre deux vues complémentaires : un tableau de bord des ressources affichant l'état courant du cluster, et un diagramme de Gantt représentant les jobs OAR sur une ligne de temps, permettant de comprendre en un coup d'œil l'utilisation des ressources et l'ordonnancement des jobs.
 
 ### Besoin
 
-Notre client souhaite reproduire fidèlement le diagramme de Gantt utilisé dans Grid5000 en utilisant le langage Rust, alors que l'implémentation actuelle de Grid5000 est réalisée en Python. L'objectif est de réécrire l'ensemble du projet dans un langage plus performant et plus sûr, en tirant parti des garanties offertes par Rust en matière de gestion mémoire et de sécurité.
+Notre client souhaite reproduire fidèlement le diagramme de Gantt utilisé dans Grid5000 [#grid5000](#bib-grid5000) en utilisant le langage Rust, alors que l'implémentation actuelle de Grid5000 est réalisée en Python. L'objectif est de réécrire l'ensemble du projet dans un langage plus performant et plus sûr, en tirant parti des garanties offertes par Rust en matière de gestion mémoire et de sécurité.
 
-Concernant l'API, l'implémentation actuelle repose uniquement sur la commande `oarstat` pour récupérer les informations nécessaires à la visualisation des jobs et des ressources. Cette approche génère une surcharge de requêtes sur le serveur et nuit à la fluidité globale du système. La migration vers Rust représente ici une opportunité de proposer une API moderne et robuste, conçue dès le départ avec des exigences élevées en matière de performance et de sécurité. L'objectif est donc de concevoir une API qui constitue une base technique plus solide et pérenne que son équivalent Python.
+Concernant l'API, l'implémentation actuelle repose uniquement sur la commande `oarstat` pour récupérer les informations nécessaires à la visualisation des jobs et des ressources [#oar](#bib-oar). Cette approche génère une surcharge de requêtes sur le serveur et nuit à la fluidité globale du système. La migration vers Rust représente ici une opportunité de proposer une API moderne et robuste, conçue dès le départ avec des exigences élevées en matière de performance et de sécurité. L'objectif est donc de concevoir une API qui constitue une base technique plus solide et pérenne que son équivalent Python.
 
 ### Cahier des charges
 
@@ -77,7 +79,7 @@ Les fonctionnalités attendues couvrent deux grandes parties :
 
 **Partie IHM :**
 
-- Organisation et affichage des jobs dans un style similaire à celui de Grid5000.
+- Organisation et affichage des jobs dans un style similaire à celui de Grid5000 [#grid5000](#bib-grid5000).
 - Implémentation des interactions/raccourcis utilisateur importantes.
 - Fonctionnalités de survol (hover) avec infobulles enrichies.
 - Réduction de la profondeur de navigation et amélioration de la lisibilité des actions dans l'IHM.
@@ -85,7 +87,7 @@ Les fonctionnalités attendues couvrent deux grandes parties :
 - Diagrammes de visualisation de la consommation énergétique.
 - Outils de navigation temporelle rapide.
 
-**Partie API :** Fournir un portage en Rust de la version Python 3 existante de l'API OAR.
+**Partie API :** Fournir un portage en Rust de la version Python 3 existante de l'API [#oar](#bib-oar).
 
 - Architecture modulaire et découplage fonctionnel
 - Alignement métier
@@ -101,9 +103,11 @@ Les fonctionnalités attendues couvrent deux grandes parties :
 
 L'application est entièrement écrite en **Rust**. Ce choix repose sur les performances du langage, ses garanties de sécurité mémoire et sa capacité à compiler vers WebAssembly sans modifications majeures du code.
 
-L'interface graphique utilise `egui` et `eframe`, deux bibliothèques _immediate mode GUI_ permettant un déploiement natif ou web via `trunk`.
+L'interface graphique utilise `egui` [#egui](#bib-egui) et `eframe` [#eframe](#bib-eframe), deux bibliothèques _immediate mode GUI_ permettant un déploiement natif ou web via `trunk`.
 
 Pour le backend et l'API, nous utilisons `Axum` avec `Tokio` pour la gestion asynchrone des requêtes HTTP, ainsi que `Swagger` et `aide` pour la documentation OpenAPI. Le projet exploite `Scalar API` pour certaines interactions spécifiques entre services.
+
+> **Remarque** : Le choix d'`egui`/`eframe` pour une plateforme HPC s'inscrit dans une démarche déjà documentée par l'équipe AIR/Grenoble [#air](#bib-air), qui recense l'usage de cette stack Rust pour des outils de supervision de Grid5000.
 
 ---
 
@@ -113,38 +117,38 @@ Pour le backend et l'API, nous utilisons `Axum` avec `Tokio` pour la gestion asy
 
 ![Architecture Globale](../Conception/architecture_projet.png)
 
-L'architecture retenue pour le portage en Rust d'OAR repose sur le patron architectural hexagonal, également connu sous le nom de _Ports and Adapters_. Ce choix reflète directement l'ambition évoquée précédemment : ne pas simplement porter un module, mais construire une base cohérente, extensible et découplée, capable d'accueillir les futurs composants du système.
+L'architecture retenue pour le portage en Rust d'OAR repose sur le patron architectural hexagonal, également connu sous le nom de _Ports and Adapters_ [#cockburn](#bib-cockburn). Ce choix reflète directement l'ambition évoquée précédemment : ne pas simplement porter un module, mais construire une base cohérente, extensible et découplée, capable d'accueillir les futurs composants du système.
 
 Au cœur de cette architecture se trouve le domaine OAR, qui encapsule l'ensemble de la logique métier sans aucune dépendance vers le monde extérieur. Ce domaine expose des ports, c'est-à-dire des interfaces bien définies, auxquels viennent se connecter des adaptateurs spécialisés. Chaque adaptateur traduit les interactions d'un acteur externe vers le langage du domaine, et inversement.
 
-Les acteurs externes gravitant autour du domaine sont multiples : l'API REST, qui constitue le point d'entrée principal pour des clients comme Goard, le scheduler, la CLI, etc. Chacun de ces acteurs communique avec le domaine exclusivement via son adaptateur dédié, garantissant ainsi un isolement total de la logique métier. La persistance est également traitée comme un adaptateur à part entière, permettant de brancher indifféremment une base PostgreSQL ou MySQL sans modifier le domaine.
+Les acteurs externes gravitant autour du domaine sont multiples : l'API REST, qui constitue le point d'entrée principal pour des clients comme [#goard](#bib-goard), le scheduler, la CLI, etc. Chacun de ces acteurs communique avec le domaine exclusivement via son adaptateur dédié, garantissant ainsi un isolement total de la logique métier. La persistance est également traitée comme un adaptateur à part entière, permettant de brancher indifféremment une base PostgreSQL ou MySQL sans modifier le domaine.
 
 ### Architecture IHM
 
-![Goard - Structure de l’IHM](../Conception/Conception_IHM/structure_ihm.png)
+![Goard - Structure de l'IHM](../Conception/Conception_IHM/structure_ihm.png)
 
-_Figure — Structure de l’IHM : zones fixes, orchestrateur (`app.rs`), état global (`ApplicationContext`) et vues._
+_Figure — Structure de l'IHM : zones fixes, orchestrateur (`app.rs`), état global (`ApplicationContext`) et vues._
 
 La figure met en évidence une séparation simple entre :
 
-- des **zones fixes** (menu, barre d’outils, statut) qui restent visibles quelle que soit la vue,
+- des **zones fixes** (menu, barre d'outils, statut) qui restent visibles quelle que soit la vue,
 - et une **zone centrale** dont le contenu dépend du contexte (authentification, _Dashboard_, _Gantt_).
 
-Sur le plan logiciel, `app.rs` joue le rôle d’**orchestrateur** : à chaque frame, il lit l’état global (`ApplicationContext`), déclenche si besoin la mise à jour des données et délègue le rendu à la _view_ active. Les _models_ concentrent la logique de données (parsing, transformations, filtres), tandis que les _views_ se limitent au rendu et aux interactions UI.
+Sur le plan logiciel, `app.rs` joue le rôle d'**orchestrateur** : à chaque frame, il lit l'état global (`ApplicationContext`), déclenche si besoin la mise à jour des données et délègue le rendu à la _view_ active. Les _models_ concentrent la logique de données (parsing, transformations, filtres), tandis que les _views_ se limitent au rendu et aux interactions UI. [#egui](#bib-egui)[#eframe](#bib-eframe)
 
-### Organisation de l’écran
+### Organisation de l'écran
 
-![Goard - Structure de l’IHM 2](../Rendu/Images_rapport/rendu_finale_divided.png)
-L’interface est volontairement découpée en **zones fixes** et une **zone centrale** :
+![Goard - Structure de l'IHM 2](../Rendu/Images_rapport/rendu_finale_divided.png)
+L'interface est volontairement découpée en **zones fixes** et une **zone centrale** :
 
 - **1) Menu (haut/Partie rouge)** : actions liées à la session (login/logout) et options globales (thème, taille de police).
-- **2) Barre d’outils (haut/Partie bleue)** : sélection de la vue (_Dashboard_ / _Gantt_), accès aux filtres et au rafraîchissement.
+- **2) Barre d'outils (haut/Partie bleue)** : sélection de la vue (_Dashboard_ / _Gantt_), accès aux filtres et au rafraîchissement.
 - **3) Zone centrale (Views/Partie orange)** : contenu principal, dépendant du contexte :
-  - **Authentification** si l’utilisateur n’est pas connecté,
+  - **Authentification** si l'utilisateur n'est pas connecté,
   - sinon **Dashboard** ou **Gantt et diagramme d'énergie**.
 - **4) Status (bas/Partie verte)** : état courant (ex. _loading_ / _refreshing_) pour rendre visibles les actions asynchrones.
 
-L’intérêt de ce découpage est simple : les commandes restent toujours au même endroit, et seule la partie centrale change en fonction de ce que l’utilisateur veut consulter.
+L'intérêt de ce découpage est simple : les commandes restent toujours au même endroit, et seule la partie centrale change en fonction de ce que l'utilisateur veut consulter.
 
 ### Données et filtres
 
@@ -155,13 +159,13 @@ Les **jobs** et **ressources** sont chargés puis stockés dans le **contexte ap
 
 ### Focus sur la vue Gantt
 
-La vue **Gantt** est conçue pour l’exploration de la planification :
+La vue **Gantt** est conçue pour l'exploration de la planification [#grid5000](#bib-grid5000) :
 
 - **Navigation** : pan/zoom, complétés par des sauts rapides (1 jour / 1 semaine).
 - **Lecture détaillée** : survol (info‑bulles) et fenêtre de détails par job.
-- **Énergie** : un graphe d’énergie estimée, synchronisé avec la fenêtre temporelle visible.
+- **Énergie** : un graphe d'énergie estimée, synchronisé avec la fenêtre temporelle visible.
 
-En résumé, l’utilisateur interagit via le **menu** et la **barre d’outils**, `app.rs` décide de la **vue active** à partir de `ApplicationContext`, puis la **view** correspondante est rendue dans la zone centrale, avec un **statut** visible lors des chargements/rafraîchissements.
+En résumé, l'utilisateur interagit via le **menu** et la **barre d'outils**, `app.rs` décide de la **vue active** à partir de `ApplicationContext`, puis la **view** correspondante est rendue dans la zone centrale, avec un **statut** visible lors des chargements/rafraîchissements.
 
 ### Architecture API
 
@@ -201,11 +205,11 @@ flowchart LR
     RepoImpl -->|Queries/Mutates| DB
 ```
 
-La conception de l'API repose sur une architecture hexagonale, dite _ports & adapters_, introduite par Alistair Cockburn en 2005. Son principe fondamental est que la logique métier ne doit jamais dépendre de l'infrastructure. Ce principe se traduit directement dans la structure des crates : `oar-domain` ne connaît ni `sqlx` ni `axum`, `oar-infrastructure` implémente les traits définis par le domaine, et `oar-api` orchestre le tout sans contenir de logique métier.
+La conception de l'API repose sur une architecture hexagonale, dite _ports & adapters_, introduite par Alistair Cockburn en 2005 [#cockburn](#bib-cockburn). Son principe fondamental est que la logique métier ne doit jamais dépendre de l'infrastructure. Ce principe se traduit directement dans la structure des crates : `oar-domain` ne connaît ni `sqlx` ni `axum`, `oar-infrastructure` implémente les traits définis par le domaine, et `oar-api` orchestre le tout sans contenir de logique métier.
 
-Cette organisation s'appuie sur deux références complémentaires. D'une part, le _Domain-Driven Design_ d'Eric Evans, dont on retrouve la terminologie dans la structure de chaque module métier : un agrégat racine, des entités, des objets valeur dans `value`, et des traits dans `ports.rs`. D'autre part, la règle de dépendance de Robert C. Martin, qui impose que les dépendances ne pointent que vers l'intérieur : `oar-domain` n'importe rien des autres crates, `oar-infrastructure` dépend du domaine mais pas de l'API, et `oar-api` dépend des deux sans que le domaine en soit conscient. Cette contrainte garantit que la logique métier reste testable indépendamment de toute base de données ou framework.
+Cette organisation s'appuie sur deux références complémentaires. D'une part, le _Domain-Driven Design_ d'Eric Evans [#evans](#bib-evans), dont on retrouve la terminologie dans la structure de chaque module métier : un agrégat racine, des entités, des objets valeur dans `value`, et des traits dans `ports.rs`. D'autre part, la règle de dépendance de Robert C. Martin [#martin](#bib-martin), qui impose que les dépendances ne pointent que vers l'intérieur : `oar-domain` n'importe rien des autres crates, `oar-infrastructure` dépend du domaine mais pas de l'API, et `oar-api` dépend des deux sans que le domaine en soit conscient. Cette contrainte garantit que la logique métier reste testable indépendamment de toute base de données ou framework.
 
-Les choix d'implémentation propres à Rust, notamment `Arc<dyn Trait>` pour le partage des services entre handlers et les traits asynchrones pour les ports, suivent les _Rust API Guidelines_ du projet officiel, qui formalisent les bonnes pratiques de conception en Rust idiomatique.
+Les choix d'implémentation propres à Rust, notamment `Arc<dyn Trait>` pour le partage des services entre handlers et les traits asynchrones pour les ports, suivent les _Rust API Guidelines_ du projet officiel [#rust-guidelines](#bib-rust-guidelines), qui formalisent les bonnes pratiques de conception en Rust idiomatique.
 
 ---
 
@@ -217,7 +221,7 @@ Les choix d'implémentation propres à Rust, notamment `Arc<dyn Trait>` pour le 
 
 Initialement, il existait un fichier `gantt.rs` contenant l'ensemble des fonctionnalités de la vue du diagramme de Gantt, avec environ 2100 lignes de code. Afin d'améliorer la maintenabilité du code à long terme et de faciliter sa lecture, nous avons entrepris un travail de refactoring.
 
-Nous avons ainsi restructuré le fichier monolithique `gantt.rs` en un module organisé sous forme de dossier, découpé par responsabilités : interactions, rendu du canvas, peinture des jobs, timeline, thème et labels. Cette séparation nous permet de réduire les risques de régression et de faciliter les évolutions futures du code.
+Nous avons ainsi restructuré le fichier monolithique `gantt.rs` en un module organisé sous forme de dossier, découpé par responsabilités : interactions, rendu du canvas, peinture des jobs, timeline, thème et labels. Cette séparation nous permet de réduire les risques de régression et de faciliter les évolutions futures du code. [#goard](#bib-goard)
 
 <!-- FIGURE TREE REFACTOR -->
 
@@ -233,13 +237,13 @@ Nous avons ainsi restructuré le fichier monolithique `gantt.rs` en un module or
 
 ![new gantt](../Rendu/Images_rapport/New_gantt.png)
 
-Auparavant, l'interface utilisait un système de rubriques déroulantes permettant de visualiser les jobs et les hosts. Notre objectif était de proposer un affichage similaire à celui utilisé sur Grid5000.
+Auparavant, l'interface utilisait un système de rubriques déroulantes permettant de visualiser les jobs et les hosts. Notre objectif était de proposer un affichage similaire à celui utilisé sur Grid5000 [#grid5000](#bib-grid5000).
 
 Pour cela, nous avons implémenté un nouveau mode de rendu inspiré de Grid5000. Le _gutter_ (zone située à gauche) affiche trois colonnes site, cluster et host dont la largeur s'adapte dynamiquement au texte affiché. Le rendu est fidèle au style _drawgantt_ : fond neutre, colonnes colorées uniquement lorsqu'elles contiennent des informations, et absence de lignes de grille dans la zone des labels.
 
 #### Interactions utilisateur
 
-Nous avons implémenté plusieurs interactions utilisateur afin de faciliter la navigation dans le diagramme de Gantt. Le déplacement horizontal (_pan_) s'effectue par un glisser-déposer avec le bouton gauche de la souris. Le zoom horizontal est contrôlé via la combinaison `Ctrl + molette`, tandis que le zoom vertical utilise `Alt + molette`.
+Nous avons implémenté plusieurs interactions utilisateur afin de faciliter la navigation dans le diagramme de Gantt. Le déplacement horizontal (_pan_) s'effectue par un glisser-déposer avec le bouton gauche de la souris. Le zoom horizontal est contrôlé via la combinaison `Ctrl + molette`, tandis que le zoom vertical utilise `Alt + molette`. [#egui](#bib-egui)
 
 Nous avons également ajouté des interactions supplémentaires : un clic simple permet de centrer la vue sur un job spécifique, un double-clic réinitialise la vue, et un clic droit ouvre la fenêtre de détails associée au job sélectionné.
 
@@ -249,7 +253,7 @@ Le déplacement sur la timeline se faisait initialement principalement par gliss
 
 Afin d'améliorer l'exploration temporelle, nous avons ajouté une barre de navigation rapide en haut du Gantt, proposant des actions en un clic : reculer ou avancer d'un jour, ainsi que reculer ou avancer d'une semaine.
 
-Cette navigation est implémentée avec _egui_ et applique un décalage temporel exact (en secondes) tout en conservant le niveau de zoom courant. Nous pouvons ainsi enchaîner des déplacements courts ou longs sans perdre le contexte visuel.
+Cette navigation est implémentée avec _egui_ [#egui](#bib-egui) et applique un décalage temporel exact (en secondes) tout en conservant le niveau de zoom courant. Nous pouvons ainsi enchaîner des déplacements courts ou longs sans perdre le contexte visuel.
 
 Cette amélioration renforce nettement l'ergonomie : moins de manipulations de la souris, une navigation plus prévisible, et une lecture des périodes plus fluide lors de l'analyse des jobs.
 
@@ -271,25 +275,29 @@ Le graphe de consommation d'énergie a été ajouté à la demande de notre port
 
 ![API view](../Rendu/Images_rapport/api.png)
 
-L'objectif initial était de reproduire fidèlement l'API OAR existante en Rust, en s'appuyant sur le framework `axum` pour le routage et la gestion des requêtes HTTP. En pratique, le périmètre s'est élargi : l'analyse de l'existant a mis en évidence des lacunes structurelles que le simple portage n'aurait pas résolues, et certains choix d'architecture ont été pris délibérément pour poser des bases plus solides que celles de la version Python. Le résultat est une source de vérité centrale pour l'ensemble du système OAR : toute la logique métier, les contrats d'interface, et les règles de persistance sont désormais définis en un seul endroit, versionné, typé statiquement, et indépendant de tout framework.
+L'objectif initial était de reproduire fidèlement l'API OAR existante en Rust [#oar](#bib-oar), en s'appuyant sur le framework `axum` pour le routage et la gestion des requêtes HTTP. En pratique, le périmètre s'est élargi : l'analyse de l'existant a mis en évidence des lacunes structurelles que le simple portage n'aurait pas résolues, et certains choix d'architecture ont été pris délibérément pour poser des bases plus solides que celles de la version Python. Le résultat est une source de vérité centrale pour l'ensemble du système OAR : toute la logique métier, les contrats d'interface, et les règles de persistance sont désormais définis en un seul endroit, versionné, typé statiquement, et indépendant de tout framework.
+
+> **Remarque** : La structuration du projet `axum`/`sqlx` s'est appuyée sur deux références de référence pour les APIs Rust en production : l'ouvrage _Zero To Production In Rust_ de Luca Palmieri [#zero-to-prod](#bib-zero-to-prod), qui guide la mise en place d'une API robuste de bout en bout, et le projet `realworld-rust-axum-sqlx` [#realworld](#bib-realworld), qui constitue une implémentation de référence d'une API REST complète avec cette stack. Ces deux sources ont influencé les choix d'organisation des handlers, de l'injection de dépendances et de la gestion des erreurs.
 
 #### Architecture
 
-Le domaine est découpé en modules indépendants : `jobs`, `resources`, `queues`, `accounting`, `events`, `admission`, `scheduler` et `gantt`, chacun exposant ses propres traits dans un fichier `ports.rs`. Ces traits sont implémentés exclusivement par la couche `oar-infrastructure` via `sqlx`.
+Le domaine est découpé en modules indépendants : `jobs`, `resources`, `queues`, `accounting`, `events`, `admission`, `scheduler` et `gantt`, chacun exposant ses propres traits dans un fichier `ports.rs`. Ces traits sont implémentés exclusivement par la couche `oar-infrastructure` via `sqlx`. [#cockburn](#bib-cockburn)[#evans](#bib-evans)
 
 #### Base de données
 
-Le schéma PostgreSQL couvre l'intégralité du modèle OAR. Les requêtes sont écrites en `sqlx` avec validation à la compilation, ce qui élimine une catégorie entière d'erreurs de typage que l'on retrouve fréquemment dans les APIs Python équivalentes.
+Le schéma PostgreSQL couvre l'intégralité du modèle [#oar](#bib-oar). Les requêtes sont écrites en `sqlx` avec validation à la compilation, ce qui élimine une catégorie entière d'erreurs de typage que l'on retrouve fréquemment dans les APIs Python équivalentes.
+
+> **Remarque** : Le pattern d'organisation des requêtes `sqlx` et la structure des repositories ont été inspirés par le projet `realworld-rust-axum-sqlx` [#realworld](#bib-realworld), qui démontre une approche idiomatique de la persistance avec `sqlx` dans un contexte `axum`.
 
 #### Sécurité et authentification
 
-Nous avons repris le mécanisme d'authentification JWT présent dans OAR3 Python, auquel nous avons ajouté un système de clés API. Ce second mécanisme cible explicitement les interactions inter-services, notamment avec des outils de visualisation tiers comme Goard. Les mots de passe sont hachés avec Argon2. Un middleware d'authentification personnalisé intercède sur chaque requête, avec un contrôle d'accès par rôle pour les opérations sensibles.
+Nous avons repris le mécanisme d'authentification JWT présent dans OAR3 Python [#oar](#bib-oar), auquel nous avons ajouté un système de clés API. Ce second mécanisme cible explicitement les interactions inter-services, notamment avec des outils de visualisation tiers comme [#goard](#bib-goard). Les mots de passe sont hachés avec Argon2. Un middleware d'authentification personnalisé intercède sur chaque requête, avec un contrôle d'accès par rôle pour les opérations sensibles.
+
+> **Remarque** : La mise en place du middleware d'authentification et la structure générale de la couche sécurité ont été guidées par les exemples et patterns présentés dans _Zero To Production In Rust_ [#zero-to-prod](#bib-zero-to-prod), notamment pour la gestion des secrets et la validation des tokens JWT dans `axum`.
 
 #### Documentation et observabilité
 
-La documentation OpenAPI est générée automatiquement à partir des types Rust via `aide`, ce qui garantit une conformité continue entre le code et la spécification exposée sans documentation maintenue manuellement. L'API intègre également un système de tracing structuré compatible OpenTelemetry, permettant le suivi des requêtes et la détection de régressions de performance en environnement réel.
-
-<!-- INSERT FIGURE -->
+La documentation OpenAPI est générée automatiquement à partir des types Rust via `aide`, ce qui garantit une conformité continue entre le code et la spécification exposée sans documentation maintenue manuellement. L'API intègre également un système de tracing structuré compatible OpenTelemetry, permettant le suivi des requêtes et la détection de régressions de performance en environnement réel. [#rust-guidelines](#bib-rust-guidelines)
 
 ---
 
@@ -303,9 +311,9 @@ Nous travaillions principalement par sprints en adoptant une approche agile. Cha
 
 Le projet a été marqué par l'absence prolongée d'un membre de l'équipe pour raisons de santé, ce qui a redistribué la charge de travail et contraint l'équipe à revoir ses priorités en cours de route.
 
-La prise en main de l'existant a également été coûteuse. OAR et Grid5000 reposent sur plusieurs couches d'abstraction imbriquées dont la logique est rarement documentée explicitement, ce qui a nécessité un temps d'analyse important avant de pouvoir produire quoi que ce soit.
+La prise en main de l'existant a également été coûteuse. OAR et Grid5000 reposent sur plusieurs couches d'abstraction imbriquées dont la logique est rarement documentée explicitement, ce qui a nécessité un temps d'analyse important avant de pouvoir produire quoi que ce soit. [#oar](#bib-oar)[#grid5000](#bib-grid5000)
 
-La barrière Rust a ralenti les premières phases du développement. Le compilateur impose une discipline stricte qui demande une période d'adaptation réelle, et certains choix d'architecture ont dû être revus pour s'y conformer.
+La barrière Rust a ralenti les premières phases du développement. Le compilateur impose une discipline stricte qui demande une période d'adaptation réelle, et certains choix d'architecture ont dû être revus pour s'y conformer. [#rust-guidelines](#bib-rust-guidelines)
 
 Enfin, les exigences de documentation rigoureuse du client, bien que légitimes, ont introduit des phases d'introspection et de rédaction qui ont mécaniquement réduit le temps disponible pour le développement effectif.
 
@@ -334,7 +342,7 @@ Comme illustré sur la figure ci-dessus, les cartes regroupent des actions concr
 
 ## 7. Outils de collaboration
 
-**GitHub :** GitHub a été utilisé pour forker la version du projet reçue du groupe de l'année précédente. Il nous a également permis de collaborer efficacement, de suivre les modifications du code et de gérer les commits.
+**GitHub :** GitHub a été utilisé pour forker la version du projet reçue du groupe de l'année précédente [#goard](#bib-goard). Il nous a également permis de collaborer efficacement, de suivre les modifications du code et de gérer les commits.
 
 **Discord :** Discord a servi de hub de communication pour notre équipe :
 
@@ -351,7 +359,7 @@ Cet outil a facilité la communication et la coordination au sein de l'équipe.
 
 La documentation du projet a été structurée autour de deux dossiers complémentaires : **IHM** et **API**. Chacun regroupe les diagrammes et schémas utilisés dans ce rapport, ainsi que d'autres supports internes (architecture, séquences, cas d'utilisation) destinés à clarifier le fonctionnement du projet et à faciliter la coordination entre les membres de l'équipe. Ces éléments servent notamment à décrire l'organisation de l'interface, les interactions principales, et le lien entre les vues (_Dashboard_/_Gantt_) et les données affichées.
 
-Pour faciliter la prise en main, le dépôt contient également les informations nécessaires au démarrage (build, exécution native et web) ainsi que les prérequis, directement dans les fichiers de description du projet.
+Pour faciliter la prise en main, le dépôt contient également les informations nécessaires au démarrage (build, exécution native et web) ainsi que les prérequis, directement dans les fichiers de description du projet [#goard](#bib-goard).
 
 ---
 
@@ -361,23 +369,11 @@ Pour faciliter la prise en main, le dépôt contient également les informations
 
 Nous l'avons configuré avec une extension dédiée à Rust :
 
-- **rust-analyzer** : support avancé du langage Rust (autocomplétion, détection d'erreurs en temps réel, navigation dans le code).
+- **rust-analyzer** : support avancé du langage Rust (autocomplétion, détection d'erreurs en temps réel, navigation dans le code). [#rust-guidelines](#bib-rust-guidelines)
 
 ---
 
 ## 10. Métriques logicielles
-
-<!-- ### Lignes de code et langages
-
-| Langage   | Fichiers | Lignes | Code | %     |
-| --------- | -------- | ------ | ---- | ----- |
-| Rust      | 62       |        |      |       |
-| HTML      |          |        |      |       |
-| JS        |          |        |      |       |
-| YAML      |          |        |      |       |
-| **Total** |          |        |      | 100 % |
-
-_Répartition par langage — obtenue avec `tokei`_ -->
 
 ### Répartition par membre
 
@@ -389,7 +385,7 @@ _Répartition par langage — obtenue avec `tokei`_ -->
 | Moataz Er-rami    |   17 (34.69%) |       574 |       340 |
 | Dila Memil        |   13 (26.53%) |       488 |       197 |
 
-Au début du projet et jusqu'au milieu, Aymane AMESSEGHER avait push le fichier data.json, qui contient les résultats de la commande oastat et toutes les informations liées au chargement des données. Comme ce fichier se modifie à chaque exécution - le système étant en temps réel - chaque push générait l’impression d’avoir écrit environ 5xx xxx lignes de code. Cela a faussé le décompte réel de ces lignes de code. Après vérification, nous avons constaté qu’en réalité, il avait ajouté environ 2 xxx lignes de code.
+Au début du projet et jusqu'au milieu, Aymane AMESSEGHER avait push le fichier data.json, qui contient les résultats de la commande oastat et toutes les informations liées au chargement des données. Comme ce fichier se modifie à chaque exécution - le système étant en temps réel - chaque push générait l'impression d'avoir écrit environ 5xx xxx lignes de code. Cela a faussé le décompte réel de ces lignes de code. Après vérification, nous avons constaté qu'en réalité, il avait ajouté environ 2 xxx lignes de code. [#goard](#bib-goard)
 
 #### API
 
@@ -397,41 +393,24 @@ Au début du projet et jusqu'au milieu, Aymane AMESSEGHER avait push le fichier 
 | -------------- | ------------ | -------- | -------- |
 | Amine          | 25 (100.00%) | 2967     | 899      |
 
-<!-- ### Performance
-
-_(À compléter : décrire les mesures effectuées. Au minimum : temps de chargement initial des données, etc.)_ -->
-
-<!-- ### Temps ingénieur
-
-| Phase                 | Prévisionnel (h) | Effectif (h) | Écart |
-| --------------------- | ---------------- | ------------ | ----- |
-| Analyse et conception |                  |              |       |
-| Développement IHM     |                  |              |       |
-| Développement API     |                  |              |       |
-| Tests et validation   |                  |              |       |
-| Documentation         |                  |              |       |
-| **Total**             |                  |              |       |
-
-_Temps ingénieur par phase (en heures)_ -->
-
 ---
 
 ## 11. Conclusion et retour d'expérience
 
-Ce projet avait deux objectifs principaux : améliorer l'IHM de Goard (en particulier le Gantt) et poser des bases solides pour l'évolution de l'API OAR en Rust. Côté interface, le travail réalisé a rendu l'outil plus proche de l'expérience Grid5000 : refactoring du module Gantt en sous-modules lisibles, interactions de navigation (pan/zoom et sauts 1 jour / 1 semaine), infobulles et fenêtre de détails, mise en place de presets de clusters, et ajout d'un graphe d'énergie estimée synchronisé avec la fenêtre temporelle visible. Côté API, l'orientation hexagonale (_ports & adapters_) fournit un cadre clair pour faire évoluer le système sans coupler la logique métier aux choix d'infrastructure.
+Ce projet avait deux objectifs principaux : améliorer l'IHM de Goard (en particulier le Gantt) et poser des bases solides pour l'évolution de l'API OAR en Rust [#oar](#bib-oar)[#goard](#bib-goard). Côté interface, le travail réalisé a rendu l'outil plus proche de l'expérience Grid5000 [#grid5000](#bib-grid5000) : refactoring du module Gantt en sous-modules lisibles, interactions de navigation (pan/zoom et sauts 1 jour / 1 semaine), infobulles et fenêtre de détails, mise en place de presets de clusters, et ajout d'un graphe d'énergie estimée synchronisé avec la fenêtre temporelle visible. Côté API, l'orientation hexagonale (_ports & adapters_) [#cockburn](#bib-cockburn) fournit un cadre clair pour faire évoluer le système sans coupler la logique métier aux choix d'infrastructure.
 
-Le projet nous a également confrontés à des enjeux concrets de reprise d'existant : comprendre rapidement une base de code, préserver le comportement attendu, et itérer avec le client sur des points d'ergonomie. Le choix Rust/`egui` a été un atout pour la robustesse et la performance, mais il impose aussi de la rigueur dans la structuration des états et des interactions (notamment sur le Gantt). Enfin, la séparation IHM/API a facilité la répartition du travail et la clarification des responsabilités.
+Le projet nous a également confrontés à des enjeux concrets de reprise d'existant : comprendre rapidement une base de code, préserver le comportement attendu, et itérer avec le client sur des points d'ergonomie. Le choix Rust/`egui` [#egui](#bib-egui) a été un atout pour la robustesse et la performance, mais il impose aussi de la rigueur dans la structuration des états et des interactions (notamment sur le Gantt). Enfin, la séparation IHM/API a facilité la répartition du travail et la clarification des responsabilités.
 
 ### Améliorations et évolutions futures
 
 Plusieurs axes d'évolution paraissent naturels à la suite de ce travail :
 
 - **Énergie :** remplacer l'estimation globale actuelle par un modèle plus fidèle (calibration par type de nœud, prise en compte CPU/GPU, validation sur traces réelles).
-- **Données :** réduire la dépendance à `oarstat` en privilégiant l'API dédiée (moins de surcharge serveur, mises à jour plus fluides, meilleure maîtrise des formats).
+- **Données :** réduire la dépendance à `oarstat` en privilégiant l'API dédiée [#oar](#bib-oar) (moins de surcharge serveur, mises à jour plus fluides, meilleure maîtrise des formats).
 - **Filtres et presets :** compléter la persistance (préférences utilisateur, filtres courants) et améliorer l'ergonomie (raccourcis, sélection plus rapide).
-- **Services API manquants :** compléter les fonctionnalités non implémentées au-delà du CRUD, puis connecter l'API aux deux services (Goard et le scheduler OAR/Redox) afin d'avoir une chaîne de bout en bout cohérente.
-- **Qualité :** renforcer la stratégie de tests (unitaires sur parsing/filtrage, tests de non-régression sur rendu) et ajouter des mesures de performance reproductibles.
-- **Déploiement :** stabiliser le mode web (WASM) et la configuration de production (cache, monitoring, gestion des erreurs) pour une utilisation continue.
+- **Services API manquants :** compléter les fonctionnalités non implémentées au-delà du CRUD, puis connecter l'API aux deux services ([#goard](#bib-goard) et le scheduler OAR/Redox) afin d'avoir une chaîne de bout en bout cohérente.
+- **Qualité :** renforcer la stratégie de tests (unitaires sur parsing/filtrage, tests de non-régression sur rendu) et ajouter des mesures de performance reproductibles. [#rust-guidelines](#bib-rust-guidelines)[#zero-to-prod](#bib-zero-to-prod)
+- **Déploiement :** stabiliser le mode web (WASM) et la configuration de production (cache, monitoring, gestion des erreurs) pour une utilisation continue. [#eframe](#bib-eframe)
 
 Au final, le projet livre une base plus maintenable et une IHM plus efficace pour la lecture des jobs et des ressources. Il pose également des fondations cohérentes pour poursuivre l'industrialisation, en particulier sur la fiabilisation de la collecte des données et la consolidation de l'API.
 
@@ -473,15 +452,15 @@ Au final, le projet livre une base plus maintenable et une IHM plus efficace pou
 
 ## Bibliographie
 
-- Dépôt `OAR-26/goard-26` : <https://github.com/OAR-26/goard-26>
-- Documentation egui : <https://docs.rs/egui>
-- Documentation eframe : <https://docs.rs/eframe>
-- Plateforme Grid5000 : <https://www.grid5000.fr>
-- Documentation OAR : <https://oar.imag.fr/docs/latest/>
-- Page projet AIR/Grenoble : <https://air.imag.fr/index.php/Dashboard_en_technologie_egui/rust_pour_plateforme_HPC>
-- Cockburn, A. (2005). Hexagonal Architecture (Ports and Adapters). <https://alistair.cockburn.us/hexagonal-architecture/>
-- Evans, E. (2003). _Domain-Driven Design: Tackling Complexity in the Heart of Software_. Addison-Wesley. ISBN : 978-0321125217
-- Martin, R. C. (2012). The Clean Architecture. <https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html>
-- Rust Project. (2024). Rust API Guidelines. <https://rust-lang.github.io/api-guidelines/>
-- Palmieri, L. _Zero To Production In Rust_. <https://github.com/LukeMathWalker/zero-to-production>
-- Gold standard for making real world Rust APIs: <https://github.com/JoeyMckenzie/realworld-rust-axum-sqlx>
+- <a id="bib-goard"></a>Dépôt `OAR-26/goard-26` : <https://github.com/OAR-26/goard-26>
+- <a id="bib-egui"></a>Documentation egui : <https://docs.rs/egui>
+- <a id="bib-eframe"></a>Documentation eframe : <https://docs.rs/eframe>
+- <a id="bib-grid5000"></a>Plateforme Grid5000 : <https://www.grid5000.fr>
+- <a id="bib-oar"></a>Documentation OAR : <https://oar.imag.fr/docs/latest/>
+- <a id="bib-air"></a>Page projet AIR/Grenoble : <https://air.imag.fr/index.php/Dashboard_en_technologie_egui/rust_pour_plateforme_HPC>
+- <a id="bib-cockburn"></a>Cockburn, A. (2005). Hexagonal Architecture (Ports and Adapters). <https://alistair.cockburn.us/hexagonal-architecture/>
+- <a id="bib-evans"></a>Evans, E. (2003). _Domain-Driven Design: Tackling Complexity in the Heart of Software_. Addison-Wesley. ISBN : 978-0321125217
+- <a id="bib-martin"></a>Martin, R. C. (2012). The Clean Architecture. <https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html>
+- <a id="bib-rust-guidelines"></a>Rust Project. (2024). Rust API Guidelines. <https://rust-lang.github.io/api-guidelines/>
+- <a id="bib-zero-to-prod"></a>Palmieri, L. _Zero To Production In Rust_. <https://github.com/LukeMathWalker/zero-to-production>
+- <a id="bib-realworld"></a>Gold standard for making real world Rust APIs: <https://github.com/JoeyMckenzie/realworld-rust-axum-sqlx>
