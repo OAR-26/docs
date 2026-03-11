@@ -126,35 +126,40 @@ Les acteurs externes gravitant autour du domaine sont multiples : l'API REST, qu
 
 ![Goard - Structure de l’IHM](../Conception/Conception_IHM/structure_ihm.png)
 
-*Figure — Structure de l’IHM : zones fixes, orchestrateur (`app.rs`), état global (`ApplicationContext`) et vues.*
+_Figure — Structure de l’IHM : zones fixes, orchestrateur (`app.rs`), état global (`ApplicationContext`) et vues._
 
 La figure met en évidence une séparation simple entre :
+
 - des **zones fixes** (menu, barre d’outils, statut) qui restent visibles quelle que soit la vue,
-- et une **zone centrale** dont le contenu dépend du contexte (authentification, *Dashboard*, *Gantt*).
+- et une **zone centrale** dont le contenu dépend du contexte (authentification, _Dashboard_, _Gantt_).
 
-Sur le plan logiciel, `app.rs` joue le rôle d’**orchestrateur** : à chaque frame, il lit l’état global (`ApplicationContext`), déclenche si besoin la mise à jour des données et délègue le rendu à la *view* active. Les *models* concentrent la logique de données (parsing, transformations, filtres), tandis que les *views* se limitent au rendu et aux interactions UI.
+Sur le plan logiciel, `app.rs` joue le rôle d’**orchestrateur** : à chaque frame, il lit l’état global (`ApplicationContext`), déclenche si besoin la mise à jour des données et délègue le rendu à la _view_ active. Les _models_ concentrent la logique de données (parsing, transformations, filtres), tandis que les _views_ se limitent au rendu et aux interactions UI.
 
-### Organisation de l’écran 
+### Organisation de l’écran
 
-![Goard - Structure de l’IHM 2](../Rendu\Images_rapport\rendu_finale_divided.png)
+![Goard - Structure de l’IHM 2](../Rendu/Images_rapport/rendu_finale_divided.png)
 L’interface est volontairement découpée en **zones fixes** et une **zone centrale** :
 
 - **1) Menu (haut/Partie rouge)** : actions liées à la session (login/logout) et options globales (thème, taille de police).
-- **2) Barre d’outils (haut/Partie bleue)** : sélection de la vue (*Dashboard* / *Gantt*), accès aux filtres et au rafraîchissement.
+- **2) Barre d’outils (haut/Partie bleue)** : sélection de la vue (_Dashboard_ / _Gantt_), accès aux filtres et au rafraîchissement.
 - **3) Zone centrale (Views/Partie orange)** : contenu principal, dépendant du contexte :
-    - **Authentification** si l’utilisateur n’est pas connecté,
-    - sinon **Dashboard** ou **Gantt et diagramme d'énergie**.
-- **4) Status (bas/Partie verte)** : état courant (ex. *loading* / *refreshing*) pour rendre visibles les actions asynchrones.
+  - **Authentification** si l’utilisateur n’est pas connecté,
+  - sinon **Dashboard** ou **Gantt et diagramme d'énergie**.
+- **4) Status (bas/Partie verte)** : état courant (ex. _loading_ / _refreshing_) pour rendre visibles les actions asynchrones.
 
 L’intérêt de ce découpage est simple : les commandes restent toujours au même endroit, et seule la partie centrale change en fonction de ce que l’utilisateur veut consulter.
 
 ### Données et filtres
+
 Les **jobs** et **ressources** sont chargés puis stockés dans le **contexte applicatif** (`ApplicationContext`). Les filtres (période, owner, état, presets de clusters) transforment ces données « brutes » en un **jeu de données affichable**. Cette sortie filtrée alimente ensuite les deux vues principales :
+
 - le **Dashboard** (métriques + tableau),
 - le **Gantt** (rendu temporel).
 
 ### Focus sur la vue Gantt
+
 La vue **Gantt** est conçue pour l’exploration de la planification :
+
 - **Navigation** : pan/zoom, complétés par des sauts rapides (1 jour / 1 semaine).
 - **Lecture détaillée** : survol (info‑bulles) et fenêtre de détails par job.
 - **Énergie** : un graphe d’énergie estimée, synchronisé avec la fenêtre temporelle visible.
