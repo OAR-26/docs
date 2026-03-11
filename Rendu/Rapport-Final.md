@@ -136,7 +136,7 @@ Sur le plan logiciel, `app.rs` joue le rôle d’**orchestrateur** : à chaque f
 
 ### Organisation de l’écran 
 
-![Goard — Structure de l’IHM 2](/Rendu\Images_rapport\rendu_finale_divided.png)
+![Goard — Structure de l’IHM 2](../Rendu\Images_rapport\rendu_finale_divided.png)
 L’interface est volontairement découpée en **zones fixes** et une **zone centrale** :
 
 - **1) Menu (haut/Partie rouge)** : actions liées à la session (login/logout) et options globales (thème, taille de police).
