@@ -91,10 +91,11 @@ Les fonctionnalités attendues couvrent deux grandes parties :
 
 - Architecture modulaire et découplage fonctionnel
 - Alignement métier
-- Fiabilité du contrat d'interface 
+- Fiabilité du contrat d'interface
 - Sécurisation transverse et gestion des accès
 
 > #### Remarque
+>
 > Cette tâche dépasse cependant le simple exercice de traduction d'un module vers un autre langage. Sans que cela ait fait l'objet de discussions formelles, un consensus général s'est dégagé au sein de l'équipe autour d'une vision plus large : **porter à terme l'intégralité d'OAR en Rust.** Dans cette perspective, l'API ne constitue pas une fin en soi, mais le point d'entrée d'une migration progressive. Il s'agit donc de poser des fondations solides, pensées pour accueillir les futurs modules qui viendraient s'y greffer, et de faire de cette API **une source de vérité centrale et fiable pour l'ensemble du système.**
 
 ---
@@ -392,6 +393,9 @@ Au début du projet et jusqu'au milieu, Aymane AMESSEGHER avait push le fichier 
 | Auteur combiné | Commits (%)  | + Lignes | - Lignes |
 | -------------- | ------------ | -------- | -------- |
 | Amine          | 25 (100.00%) | 2967     | 899      |
+
+
+> output `CLOC` des deux projets [ici](./Metriques/lignes%20de%20code.md)
 
 ---
 
