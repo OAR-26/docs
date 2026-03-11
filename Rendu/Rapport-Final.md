@@ -45,22 +45,15 @@ Ce rapport présente les résultats du projet OAR Redux, réalisé dans le cadre
 
 ## 1. Positionnement de la compétence INFO
 
-La compétence retenue pour ce projet est **Piloter un projet numérique** car elle recouvre plusieurs dimensions :
+La compétence retenue pour ce projet est **Réaliser des solutions numériques**, car le travail a consisté à concevoir et implémenter une solution logicielle complète (IHM + API) dans un contexte HPC, en garantissant qualité, sécurité et maintenabilité.
 
-**Le respect des contraintes et le cahier des charges :**  
-Le projet repose sur un dépôt open source existant (`Goard-Rust/app`) possédant sa propre architecture et ses conventions. Les développements ont donc été réalisés en veillant à maintenir la compatibilité avec cette base. Chaque modification nécessitait d'abord l'analyse du code existant, puis une validation avec l'intégralité de l'équipe.
-
-**L'adaptation de la communication selon les interlocuteurs :**  
-Les échanges avec le tuteur portaient principalement sur des aspects non techniques et des résultats attendus. En revanche, la présentation entre collègues d'équipes et devant le jury demandera une approche plus technique afin d'expliquer les objectifs et les résultats du projet et bien les argumenter.
-
-**L'organisation du travail d'équipe :**  
-Le travail a été réparti entre deux binômes : un pour l'IHM et un pour l'API.
-
-**L'utilisation des outils et des indicateurs de manière adaptée :**  
-Nous avons utilisé GitHub pour gérer le code source et suivre l'avancement du projet grâce aux commits et à l'historique des modifications, et Discord pour coordonner les échanges entre les membres de l'équipe. Ces outils ont permis d'organiser le travail et de suivre la contribution de chacun.
-
-**La prise en compte de l'éco-conception et les aspects de sécurité et de cycle de vie :**  
-Le choix du langage Rust contribue à la sécurité du projet grâce à sa gestion mémoire sûre. Ses performances permettent également une utilisation plus efficace des ressources.
+- **Méthodes et outils adaptés** : choix technologiques cohérents avec les contraintes (Rust pour performance/sûreté mémoire ; `egui/eframe` pour une IHM réactive en natif et web ; `axum`/`tokio` pour un backend asynchrone). Côté IHM, le refactoring du Gantt (découpage par responsabilités) a été mené pour réduire la complexité et faciliter l’évolution.
+- **Réglementation et bonnes pratiques** : les données manipulées sont principalement techniques (jobs, ressources, périodes, nœuds). L’API met en œuvre des mécanismes de sécurité conformes aux pratiques recommandées (JWT, clés API inter‑services, hachage Argon2, contrôle d’accès par rôle) et une attention est portée à la maîtrise des informations exposées (pas de secrets versionnés).
+- **Optimisation ressources matérielles et énergétiques** : l’architecture limite la surcharge côté serveur (asynchronisme `tokio`, typage fort, trajectoire vers une collecte via API plutôt que des appels répétés à `oarstat`). Côté IHM, l’état centralisé (`ApplicationContext`) et le filtrage en amont évitent des recalculs au rendu ; le graphe d’énergie estimée fournit un indicateur d’interprétation sur la fenêtre temporelle affichée.
+- **Collaboration** : organisation en deux axes (IHM / API) avec synchronisations régulières, permettant d’avancer en parallèle tout en restant alignés sur les besoins (données attendues, endpoints, contraintes d’affichage). L’outillage (GitHub, Discord, Trello) a structuré le suivi et la priorisation.
+- **Spécifications et normes techniques** : conformité au cahier des charges (Gantt inspiré Grid5000, pan/zoom, sauts 1 jour / 1 semaine, survol/infobulles, détails job, presets/filtres, visualisation énergie). Côté API, l’architecture hexagonale (_ports & adapters_) et la documentation OpenAPI générée à partir des types assurent un contrat clair et durable.
+- **Choix de conception justifiés** : refactoring du Gantt pour limiter les risques de régression ; `ApplicationContext` pour garantir un état partagé cohérent entre vues ; séparation domaine/infrastructure pour éviter le couplage à un framework ; `sqlx` pour fiabiliser les requêtes via validation à la compilation.
+- **Adaptation au contexte** : reprise d’un existant, montée en compétence Rust et évolution du périmètre (API devenue structurante) ont imposé une démarche itérative (analyse, prototypage, retours client/tuteur, consolidation), avec une réorganisation/priorisation lorsque les contraintes d’équipe l’imposaient.
 
 ---
 
