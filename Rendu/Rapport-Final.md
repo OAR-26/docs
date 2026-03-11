@@ -213,9 +213,11 @@ Nous avons ainsi restructuré le fichier monolithique `gantt.rs` en un module or
 #### Rendu Grid5000
 
 ##### Avant
+
 ![old gantt](../Rendu/Images_rapport/Old_gantt.png)
 
 ##### Apres
+
 ![new gantt](../Rendu/Images_rapport/New_gantt.png)
 
 Auparavant, l'interface utilisait un système de rubriques déroulantes permettant de visualiser les jobs et les hosts. Notre objectif était de proposer un affichage similaire à celui utilisé sur Grid5000.
@@ -342,11 +344,11 @@ Pour faciliter la prise en main, le dépôt contient également les informations
 
 ## 9. Environnement de développement
 
-**Visual Studio Code.** VS Code a été notre IDE principal tout au long du projet. Nous l'avons configuré avec une extension dédiée à Rust :
+**Visual Studio Code.** VS Code a été notre IDE principal tout au long du projet.
+
+Nous l'avons configuré avec une extension dédiée à Rust :
 
 - **rust-analyzer** : support avancé du langage Rust (autocomplétion, détection d'erreurs en temps réel, navigation dans le code).
-
-Cette configuration a amélioré la productivité de l'équipe en offrant une expérience proche d'un IDE complet pour Rust et en facilitant la compréhension du code existant.
 
 ---
 
