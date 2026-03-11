@@ -212,8 +212,11 @@ Nous avons ainsi restructuré le fichier monolithique `gantt.rs` en un module or
 
 #### Rendu Grid5000
 
+##### Avant
 ![old gantt](../Rendu/Images_rapport/Old_gantt.png)
-![new gantt](../Rendu/Images_rapport/Old_gantt.png)
+
+##### Apres
+![new gantt](../Rendu/Images_rapport/New_gantt.png)
 
 Auparavant, l'interface utilisait un système de rubriques déroulantes permettant de visualiser les jobs et les hosts. Notre objectif était de proposer un affichage similaire à celui utilisé sur Grid5000.
 
@@ -349,7 +352,7 @@ Cette configuration a amélioré la productivité de l'équipe en offrant une ex
 
 ## 10. Métriques logicielles
 
-### Lignes de code et langages
+<!-- ### Lignes de code et langages
 
 | Langage   | Fichiers | Lignes | Code | %     |
 | --------- | -------- | ------ | ---- | ----- |
@@ -359,27 +362,27 @@ Cette configuration a amélioré la productivité de l'équipe en offrant une ex
 | YAML      |          |        |      |       |
 | **Total** |          |        |      | 100 % |
 
-_Répartition par langage — obtenue avec `tokei`_
+_Répartition par langage — obtenue avec `tokei`_ -->
 
 ### Répartition par membre
 
 #### Goard
 
-| AUTHOR ↓ | COMMITS (%) ↓ | + LINES ↓ | - LINES ↓ |
-|---|---:|---:|---:|
-| Aymane Amessegher| 19 (38.78%) | 5,862,148 | 5,286,669 |
-| Moataz Er-rami | 17 (34.69%) | 574 | 340 |
-| Dila Memil  | 13 (26.53%) | 488 | 197 |
-
+| AUTHOR ↓          | COMMITS (%) ↓ | + LINES ↓ | - LINES ↓ |
+| ----------------- | ------------: | --------: | --------: |
+| Aymane Amessegher |   19 (38.78%) | 5,862,148 | 5,286,669 |
+| Moataz Er-rami    |   17 (34.69%) |       574 |       340 |
+| Dila Memil        |   13 (26.53%) |       488 |       197 |
 
 #### API
-| Auteur combiné             | Commits (%) | + Lignes  | - Lignes  |
-| -------------------------- | ----------- | --------- | --------- |
-| Amine  | 25 (100.00%) | 2967 | 899 |
 
-### Performance
+| Auteur combiné | Commits (%)  | + Lignes | - Lignes |
+| -------------- | ------------ | -------- | -------- |
+| Amine          | 25 (100.00%) | 2967     | 899      |
 
-_(À compléter : décrire les mesures effectuées. Au minimum : temps de chargement initial des données, etc.)_
+<!-- ### Performance
+
+_(À compléter : décrire les mesures effectuées. Au minimum : temps de chargement initial des données, etc.)_ -->
 
 <!-- ### Temps ingénieur
 
