@@ -124,31 +124,42 @@ Les acteurs externes gravitant autour du domaine sont multiples : l'API REST, qu
 
 ### Architecture IHM
 
-Goard est développée en Rust avec `egui` / `eframe`. L’IHM repose sur un état global piloté par `app.rs` : à chaque frame, l’application met à jour les données disponibles, applique les filtres actifs, puis rend la vue sélectionnée.
+![Goard — Structure de l’IHM](../Conception/Conception_IHM/structure_ihm.png)
 
-![Découpage de l’interface Goard et logique d’affichage des vues](../Conception/Conception_IHM/architecture_IHM.png)
+*Figure — Structure de l’IHM : zones fixes, orchestrateur (`app.rs`), état global (`ApplicationContext`) et vues.*
 
-Comme montré sur la figure, l’écran est organisé en zones stables afin de limiter la navigation et de garder les actions au même endroit :
+La figure met en évidence une séparation simple entre :
+- des **zones fixes** (menu, barre d’outils, statut) qui restent visibles quelle que soit la vue,
+- et une **zone centrale** dont le contenu dépend du contexte (authentification, *Dashboard*, *Gantt*).
 
-- **Menu (haut)** : authentification (login/logout) et options générales (thème, taille de police).
-- **Barre d’outils (haut)** : accès rapide aux vues (Dashboard/Gantt), aux filtres, et au rafraîchissement.
-- **Zone centrale** : affiche la vue courante (_Authentification_, _Dashboard_ ou _Gantt_).
-- **Barre de statut (bas)** : indique l’état de chargement et de rafraîchissement.
+Sur le plan logiciel, `app.rs` joue le rôle d’**orchestrateur** : à chaque frame, il lit l’état global (`ApplicationContext`), déclenche si besoin la mise à jour des données et délègue le rendu à la *view* active. Les *models* concentrent la logique de données (parsing, transformations, filtres), tandis que les *views* se limitent au rendu et aux interactions UI.
+
+### Organisation de l’écran 
+
+![Goard — Structure de l’IHM 2](/Rendu\Images_rapport\rendu_finale_divided.png)
+L’interface est volontairement découpée en **zones fixes** et une **zone centrale** :
+
+- **1) Menu (haut/Partie rouge)** : actions liées à la session (login/logout) et options globales (thème, taille de police).
+- **2) Barre d’outils (haut/Partie bleue)** : sélection de la vue (*Dashboard* / *Gantt*), accès aux filtres et au rafraîchissement.
+- **3) Zone centrale (Views/Partie orange)** : contenu principal, dépendant du contexte :
+    - **Authentification** si l’utilisateur n’est pas connecté,
+    - sinon **Dashboard** ou **Gantt et diagramme d'énergie**.
+- **4) Status (bas/Partie verte)** : état courant (ex. *loading* / *refreshing*) pour rendre visibles les actions asynchrones.
+
+L’intérêt de ce découpage est simple : les commandes restent toujours au même endroit, et seule la partie centrale change en fonction de ce que l’utilisateur veut consulter.
 
 ### Données et filtres
-
-Les jobs et les ressources sont récupérés en arrière-plan puis intégrés au contexte applicatif. Les filtres (période, propriétaire/owner, état, presets de clusters) sont ensuite appliqués pour produire l’ensemble réellement affiché. Ce même résultat filtré alimente les deux écrans principaux :
-
-- **Dashboard** : métriques + tableau
-- **Gantt** : visualisation temporelle
+Les **jobs** et **ressources** sont chargés puis stockés dans le **contexte applicatif** (`ApplicationContext`). Les filtres (période, owner, état, presets de clusters) transforment ces données « brutes » en un **jeu de données affichable**. Cette sortie filtrée alimente ensuite les deux vues principales :
+- le **Dashboard** (métriques + tableau),
+- le **Gantt** (rendu temporel).
 
 ### Focus sur la vue Gantt
+La vue **Gantt** est conçue pour l’exploration de la planification :
+- **Navigation** : pan/zoom, complétés par des sauts rapides (1 jour / 1 semaine).
+- **Lecture détaillée** : survol (info‑bulles) et fenêtre de détails par job.
+- **Énergie** : un graphe d’énergie estimée, synchronisé avec la fenêtre temporelle visible.
 
-La vue Gantt est conçue pour l’exploration interactive :
-
-- **Navigation** : pan/zoom, complétés par des sauts (1 jour / 1 semaine) pour se repositionner rapidement.
-- **Lecture détaillée** : survol (info-bulles) et ouverture d’une fenêtre de détails pour un job.
-- **Énergie** : un graphe d’énergie estimée est affiché sous le Gantt et reste synchronisé avec la fenêtre temporelle visible.
+En résumé, l’utilisateur interagit via le **menu** et la **barre d’outils**, `app.rs` décide de la **vue active** à partir de `ApplicationContext`, puis la **view** correspondante est rendue dans la zone centrale, avec un **statut** visible lors des chargements/rafraîchissements.
 
 ### Architecture API
 
