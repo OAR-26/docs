@@ -124,7 +124,7 @@ Les acteurs externes gravitant autour du domaine sont multiples : l'API REST, qu
 
 ### Architecture IHM
 
-![Goard — Structure de l’IHM](../Conception/Conception_IHM/structure_ihm.png)
+![Goard - Structure de l’IHM](../Conception/Conception_IHM/structure_ihm.png)
 
 *Figure — Structure de l’IHM : zones fixes, orchestrateur (`app.rs`), état global (`ApplicationContext`) et vues.*
 
@@ -136,7 +136,7 @@ Sur le plan logiciel, `app.rs` joue le rôle d’**orchestrateur** : à chaque f
 
 ### Organisation de l’écran 
 
-![Goard — Structure de l’IHM 2](../Rendu\Images_rapport\rendu_finale_divided.png)
+![Goard - Structure de l’IHM 2](../Rendu\Images_rapport\rendu_finale_divided.png)
 L’interface est volontairement découpée en **zones fixes** et une **zone centrale** :
 
 - **1) Menu (haut/Partie rouge)** : actions liées à la session (login/logout) et options globales (thème, taille de police).
